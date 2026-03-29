@@ -19,7 +19,7 @@ interface NoteDao {
     @Update
     suspend fun update(note: NoteEntity)
 
-    @Query("SELECT * FROM notes")
+    @Query("SELECT * FROM notes ORDER BY updatedAt DESC")
     suspend fun getAllNotes(): List<NoteEntity>
 
     @Query("SELECT * FROM notes WHERE id = :id")

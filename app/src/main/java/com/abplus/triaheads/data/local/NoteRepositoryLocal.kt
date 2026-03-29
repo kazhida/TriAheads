@@ -18,7 +18,7 @@ class NoteRepositoryLocal @Inject constructor(
     }
 
     override suspend fun update(note: NoteEntity) {
-        noteDao.update(note)
+        noteDao.update(note.copy(updatedAt = System.currentTimeMillis()))
     }
 
     override suspend fun getAllNotes(): List<NoteEntity> {

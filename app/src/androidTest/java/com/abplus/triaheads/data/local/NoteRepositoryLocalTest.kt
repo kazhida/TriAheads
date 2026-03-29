@@ -34,24 +34,27 @@ class NoteRepositoryLocalTest {
 
     @Test
     fun insertAndGetById_returnsSavedNote() = runBlocking {
-        repository.insert(NoteEntity(content = "first", headId = 1L))
+        repository.insert(NoteEntity(content = "first"))
 
         val notes = repository.getAllNotes()
         assertEquals(1, notes.size)
 
         val saved = repository.getNoteById(notes.first().id)
         assertEquals("first", saved?.content)
-        assertEquals(1L, saved?.headId)
+        assertEquals(true, (saved?.createdAt ?: 0L) > 0L)
+        assertEquals(true, (saved?.updatedAt ?: 0L) > 0L)
     }
 
     @Test
     fun updateAndDelete_reflectsLatestState() = runBlocking {
-        repository.insert(NoteEntity(content = "before", headId = 10L))
+        repository.insert(NoteEntity(content = "before"))
         val inserted = repository.getAllNotes().first()
+        val beforeUpdatedAt = inserted.updatedAt
 
         repository.update(inserted.copy(content = "after"))
         val updated = repository.getNoteById(inserted.id)
         assertEquals("after", updated?.content)
+        assertEquals(true, (updated?.updatedAt ?: 0L) >= beforeUpdatedAt)
 
         repository.delete(updated!!)
         assertNull(repository.getNoteById(inserted.id))
