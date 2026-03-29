@@ -2,12 +2,13 @@ package com.abplus.triaheads.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.abplus.triaheads.data.NoteEntity
 
 @Database(
-    entities = [HeadEntity::class],
+    entities = [NoteEntity::class],
     version = 1,
     exportSchema = true
 )
 abstract class TriAheadsDatabase : RoomDatabase() {
-    abstract fun headDao(): HeadDao
+    abstract fun noteDao(): NoteDao
 }
