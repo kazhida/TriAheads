@@ -2,7 +2,9 @@ package com.abplus.triaheads.di
 
 import android.content.Context
 import androidx.room.Room
-import com.abplus.triaheads.data.local.HeadDao
+import com.abplus.triaheads.data.NoteRepository
+import com.abplus.triaheads.data.local.NoteDao
+import com.abplus.triaheads.data.local.NoteRepositoryLocal
 import com.abplus.triaheads.data.local.TriAheadsDatabase
 import dagger.Module
 import dagger.Provides
@@ -27,7 +29,13 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideHeadDao(
+    fun provideNoteDao(
         database: TriAheadsDatabase
-    ): HeadDao = database.headDao()
+    ): NoteDao = database.noteDao()
+
+    @Provides
+    @Singleton
+    fun provideNoteRepository(
+        repositoryLocal: NoteRepositoryLocal
+    ): NoteRepository = repositoryLocal
 }
