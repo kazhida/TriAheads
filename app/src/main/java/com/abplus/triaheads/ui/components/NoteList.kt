@@ -15,10 +15,10 @@ import com.abplus.triaheads.ui.theme.TriAheadsTheme
 @Composable
 fun NoteList(
     notes: List<NoteEntity>,
+    modifier: Modifier = Modifier,
     onShareClick: (NoteEntity) -> Unit = {},
     onEditClick: (NoteEntity) -> Unit = {},
     onDeleteClick: (NoteEntity) -> Unit = {},
-    modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(16.dp)
 ) {
     LazyColumn(

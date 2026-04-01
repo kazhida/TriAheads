@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.room.util.TableInfo
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.theme.TriAheadsTheme
 import java.text.DateFormat
