@@ -50,6 +50,7 @@ fun NoteListScreen(
     noteViewModel: NoteViewModel
 ) {
     val context = LocalContext.current
+    val chooserTitle = stringResource(id = R.string.share_note_chooser_title)
     val notes by noteViewModel.notes.collectAsState()
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -70,7 +71,9 @@ fun NoteListScreen(
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, note.content)
             }
-            context.startActivity(Intent.createChooser(shareIntent, "Share note"))
+            if (shareIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(Intent.createChooser(shareIntent, chooserTitle))
+            }
         }
     }
 

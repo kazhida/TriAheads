@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">TriAheads</string>
     <string name="app_title">TriAheads</string>
+    <string name="share_note_chooser_title">Share note</string>
 </resources>

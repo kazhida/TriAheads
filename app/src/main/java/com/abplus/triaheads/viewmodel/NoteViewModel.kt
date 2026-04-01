@@ -38,6 +38,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun shareNote(note: NoteEntity) {
+        if (note.content.isBlank()) return
         _shareRequests.tryEmit(note)
     }
 
