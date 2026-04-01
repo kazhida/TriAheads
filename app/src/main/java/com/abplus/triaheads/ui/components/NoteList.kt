@@ -16,6 +16,9 @@ import com.abplus.triaheads.ui.theme.TriAheadsTheme
 fun NoteList(
     notes: List<NoteEntity>,
     modifier: Modifier = Modifier,
+    onShareClick: (NoteEntity) -> Unit = {},
+    onEditClick: (NoteEntity) -> Unit = {},
+    onDeleteClick: (NoteEntity) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(16.dp)
 ) {
     LazyColumn(
@@ -27,7 +30,12 @@ fun NoteList(
             items = notes,
             key = { it.id }
         ) { note ->
-            NoteItem(note = note)
+            NoteItem(
+                note = note,
+                onShareClick = { onShareClick(note) },
+                onEditClick = { onEditClick(note) },
+                onDeleteClick = { onDeleteClick(note) }
+            )
         }
     }
 }
