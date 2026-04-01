@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +37,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.abplus.triaheads.R
 import com.abplus.triaheads.data.NoteEntity
+import com.abplus.triaheads.ui.theme.BlueGrey40
+import com.abplus.triaheads.ui.theme.Blue10
 import com.abplus.triaheads.ui.components.NoteList
+import com.abplus.triaheads.ui.theme.FabColor
+import com.abplus.triaheads.ui.theme.White
 import com.abplus.triaheads.viewmodel.NoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,9 +88,15 @@ fun NoteListScreen(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
             )
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = White.copy(alpha = 0.75f))
+        )
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -93,6 +105,11 @@ fun NoteListScreen(
             topBar = {
                 TopAppBar(
                     title = { Text(text = stringResource(id = R.string.app_title)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = BlueGrey40,
+                        titleContentColor = White,
+                        actionIconContentColor = White
+                    ),
                     actions = {
                         IconButton(onClick = { }) {
                             Icon(
@@ -105,6 +122,7 @@ fun NoteListScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
+                    containerColor = FabColor,
                     onClick = { onFabClick(speechLauncher::launch) }
                 ) {
                     Icon(
