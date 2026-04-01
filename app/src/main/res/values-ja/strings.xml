@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">TriAheads</string>
     <string name="app_title">トリアヘズ</string>
+    <string name="app_title_edit">トリアヘズ ー編集ー</string>
+    <string name="share_note_chooser_title">メモを共有</string>
     <string name="delete_note_dialog_title">メモを削除</string>
     <string name="delete_note_dialog_message">このメモを削除しますか？</string>
     <string name="ok">OK</string>
