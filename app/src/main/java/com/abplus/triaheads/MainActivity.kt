@@ -4,23 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.abplus.triaheads.data.NoteRepository
+import androidx.activity.viewModels
 import com.abplus.triaheads.ui.screens.NoteListScreen
 import com.abplus.triaheads.ui.theme.TriAheadsTheme
+import com.abplus.triaheads.viewmodel.NoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var noteRepository: NoteRepository
+    private val noteViewModel: NoteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             TriAheadsTheme {
-                NoteListScreen(noteRepository = noteRepository)
+                NoteListScreen(noteViewModel = noteViewModel)
             }
         }
     }

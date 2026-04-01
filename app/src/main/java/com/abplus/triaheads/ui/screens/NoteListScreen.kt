@@ -13,25 +13,19 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.abplus.triaheads.data.NoteEntity
-import com.abplus.triaheads.data.NoteRepository
 import com.abplus.triaheads.ui.components.NoteList
-import kotlinx.coroutines.launch
+import com.abplus.triaheads.viewmodel.NoteViewModel
 
 @Composable
 fun NoteListScreen(
-    noteRepository: NoteRepository
+    noteViewModel: NoteViewModel
 ) {
-    var notes by remember { mutableStateOf(emptyList<NoteEntity>()) }
-    val coroutineScope = rememberCoroutineScope()
+    val notes by noteViewModel.notes.collectAsState()
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -43,17 +37,7 @@ fun NoteListScreen(
             ?.trim()
             .orEmpty()
 
-        if (speechText.isBlank()) return@rememberLauncherForActivityResult
-
-        val note = buildNoteFromSpeechResult(speechText)
-        coroutineScope.launch {
-            noteRepository.insert(note)
-            notes = noteRepository.getAllNotes()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        notes = noteRepository.getAllNotes()
+        noteViewModel.addNoteFromSpeech(speechText)
     }
 
     Scaffold(
@@ -87,12 +71,6 @@ fun onFabClick(
             putExtra(RecognizerIntent.EXTRA_PROMPT, "話しかけてメモを追加")
         }
     )
-}
-
-fun buildNoteFromSpeechResult(
-    speechText: String
-): NoteEntity {
-    return NoteEntity(content = speechText)
 }
 
 @Preview(showBackground = true)
