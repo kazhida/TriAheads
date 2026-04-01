@@ -13,9 +13,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.components.NoteList
@@ -25,6 +27,7 @@ import com.abplus.triaheads.viewmodel.NoteViewModel
 fun NoteListScreen(
     noteViewModel: NoteViewModel
 ) {
+    val context = LocalContext.current
     val notes by noteViewModel.notes.collectAsState()
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -38,6 +41,15 @@ fun NoteListScreen(
             .orEmpty()
 
         noteViewModel.addNoteFromSpeech(speechText)
+    }
+    LaunchedEffect(noteViewModel) {
+        noteViewModel.shareRequests.collect { note ->
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, note.content)
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Share note"))
+        }
     }
 
     Scaffold(
@@ -54,7 +66,12 @@ fun NoteListScreen(
         }
     )
     { innerPadding ->
-        NoteList(notes = notes, modifier = Modifier.padding(innerPadding))
+        NoteList(
+            notes = notes,
+            onShareClick = noteViewModel::shareNote,
+            onDeleteClick = noteViewModel::deleteNote,
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 

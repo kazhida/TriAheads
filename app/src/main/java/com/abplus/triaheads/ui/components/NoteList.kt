@@ -15,6 +15,9 @@ import com.abplus.triaheads.ui.theme.TriAheadsTheme
 @Composable
 fun NoteList(
     notes: List<NoteEntity>,
+    onShareClick: (NoteEntity) -> Unit = {},
+    onEditClick: (NoteEntity) -> Unit = {},
+    onDeleteClick: (NoteEntity) -> Unit = {},
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(16.dp)
 ) {
@@ -27,7 +30,12 @@ fun NoteList(
             items = notes,
             key = { it.id }
         ) { note ->
-            NoteItem(note = note)
+            NoteItem(
+                note = note,
+                onShareClick = { onShareClick(note) },
+                onEditClick = { onEditClick(note) },
+                onDeleteClick = { onDeleteClick(note) }
+            )
         }
     }
 }
