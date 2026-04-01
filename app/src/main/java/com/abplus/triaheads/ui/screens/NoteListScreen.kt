@@ -59,6 +59,7 @@ fun NoteListScreen(
     val okLabel = stringResource(id = R.string.ok)
     val cancelLabel = stringResource(id = R.string.cancel)
     val notes by noteViewModel.notes.collectAsState()
+    var noteBeingEdited by remember { mutableStateOf<NoteEntity?>(null) }
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -132,24 +133,40 @@ fun NoteListScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
-                    containerColor = FabColor,
-                    onClick = { onFabClick(speechLauncher::launch) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add"
-                    )
+                if (noteBeingEdited == null) {
+                    FloatingActionButton(
+                        containerColor = FabColor,
+                        onClick = { onFabClick(speechLauncher::launch) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add"
+                        )
+                    }
                 }
             }
         )
         { innerPadding ->
-            NoteList(
-                notes = notes,
-                onShareClick = noteViewModel::shareNote,
-                onDeleteClick = { note -> notePendingDeletion = note },
-                modifier = Modifier.padding(innerPadding)
-            )
+            val note = noteBeingEdited
+            if (note != null) {
+                NoteEditScreen(
+                    note = note,
+                    onUpdateClick = { updatedNote ->
+                        noteViewModel.updateNote(updatedNote)
+                        noteBeingEdited = null
+                    },
+                    onCancelClick = { noteBeingEdited = null },
+                    modifier = Modifier.padding(innerPadding)
+                )
+            } else {
+                NoteList(
+                    notes = notes,
+                    onShareClick = noteViewModel::shareNote,
+                    onEditClick = { selectedNote -> noteBeingEdited = selectedNote },
+                    onDeleteClick = { selectedNote -> notePendingDeletion = selectedNote },
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
         }
     }
 

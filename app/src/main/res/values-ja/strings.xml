@@ -5,4 +5,7 @@
     <string name="delete_note_dialog_message">このメモを削除しますか？</string>
     <string name="ok">OK</string>
     <string name="cancel">キャンセル</string>
+    <string name="edit_note_title">メモ編集</string>
+    <string name="note_content_label">内容</string>
+    <string name="update">更新</string>
 </resources>
