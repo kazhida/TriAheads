@@ -3,6 +3,8 @@ package com.abplus.triaheads.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -46,20 +48,14 @@ fun NoteItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f).padding(4.dp)
+                modifier = Modifier.weight(1f).padding(8.dp)
             ) {
                 Text(
                     text = note.content,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Column(modifier = Modifier.wrapContentWidth()) {
-                Row {
-                    Text(
-                        text = "Updated: ${note.updatedAt.toDisplayDateTime()}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            Column(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -82,9 +78,16 @@ fun NoteItem(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = "Created: ${note.createdAt.toDisplayDateTime()}",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                )
+                Text(
+                    text = "Updated: ${note.updatedAt.toDisplayDateTime()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
                 )
             }
         }
