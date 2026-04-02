@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.theme.TriAheadsTheme
+import com.abplus.triaheads.ui.theme.agedBlack
 import java.text.DateFormat
 import java.util.Date
 
@@ -52,6 +53,7 @@ fun NoteItem(
             ) {
                 Text(
                     text = note.content,
+                    color = agedBlack(note.createdAt),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
