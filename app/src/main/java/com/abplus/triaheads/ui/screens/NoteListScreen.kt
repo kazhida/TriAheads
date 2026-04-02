@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -37,8 +38,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.abplus.triaheads.R
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.theme.BlueGrey40
@@ -122,6 +125,14 @@ fun NoteListScreen(
                         titleContentColor = White,
                         actionIconContentColor = White
                     ),
+                    navigationIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_appbar),
+                            contentDescription = "App icon",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(36.dp).padding(start = 8.dp)
+                        )
+                    },
                     actions = {
                         IconButton(onClick = { }) {
                             Icon(
