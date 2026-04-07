@@ -56,6 +56,14 @@ import com.abplus.triaheads.ui.components.NoteList
 import com.abplus.triaheads.ui.theme.FabColor
 import com.abplus.triaheads.ui.theme.White
 import com.abplus.triaheads.viewmodel.NoteViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.initialize
 import java.io.File
 
 private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
@@ -75,6 +83,15 @@ fun NoteListScreen(
     val menuDescription = stringResource(id = R.string.menu)
     val changeWallpaperLabel = stringResource(id = R.string.change_wallpaper)
     val loginLabel = stringResource(id = R.string.login)
+    val logoutLabel = stringResource(id = R.string.logout)
+    val loginSuccessLabel = stringResource(id = R.string.login_success)
+    val accountCreatedLabel = stringResource(id = R.string.login_new_account_created)
+    val loginFailedLabel = stringResource(id = R.string.login_failed)
+    val firebaseNotConfiguredLabel = stringResource(id = R.string.firebase_not_configured)
+    val loginCanceledLabel = stringResource(id = R.string.login_canceled)
+    val googleClientIdMissingLabel = stringResource(id = R.string.google_client_id_missing)
+    val logoutSuccessLabel = stringResource(id = R.string.logout_success)
+    val logoutFailedLabel = stringResource(id = R.string.logout_failed)
     val notes by noteViewModel.notes.collectAsState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -112,6 +129,33 @@ fun NoteListScreen(
         } else {
             Toast.makeText(context, R.string.wallpaper_set_failed, Toast.LENGTH_SHORT).show()
         }
+    }
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            Toast.makeText(context, loginCanceledLabel, Toast.LENGTH_SHORT).show()
+            return@rememberLauncherForActivityResult
+        }
+
+        val account = runCatching {
+            GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                .getResult(ApiException::class.java)
+        }.getOrNull()
+
+        if (account?.idToken.isNullOrBlank()) {
+            Toast.makeText(context, loginFailedLabel, Toast.LENGTH_LONG).show()
+            return@rememberLauncherForActivityResult
+        }
+
+        loginToFirebaseWithGoogleAccount(
+            context = context,
+            account = account,
+            loginSuccessLabel = loginSuccessLabel,
+            accountCreatedLabel = accountCreatedLabel,
+            loginFailedLabel = loginFailedLabel,
+            firebaseNotConfiguredLabel = firebaseNotConfiguredLabel
+        )
     }
     LaunchedEffect(noteViewModel) {
         noteViewModel.shareRequests.collect { note ->
@@ -190,16 +234,46 @@ fun NoteListScreen(
                                     wallpaperPickerLauncher.launch("image/*")
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text(text = loginLabel) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.Login,
-                                        contentDescription = null
-                                    )
-                                },
-                                onClick = { isMenuExpanded = false }
-                            )
+                            val user = FirebaseAuth.getInstance().currentUser
+                            val isLoggedIn = user != null
+                            if (isLoggedIn) {
+                                DropdownMenuItem(
+                                    text = { Text(text = logoutLabel) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.Login,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        logoutFromFirebaseAndGoogle(
+                                            context = context,
+                                            logoutSuccessLabel = logoutSuccessLabel,
+                                            logoutFailedLabel = logoutFailedLabel
+                                        )
+                                    }
+                                )
+                            } else {
+                                DropdownMenuItem(
+                                    text = { Text(text = loginLabel) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.Login,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        startGoogleLogin(
+                                            context = context,
+                                            googleSignInLauncher = googleSignInLauncher::launch,
+                                            googleClientIdMissingLabel = googleClientIdMissingLabel,
+                                            loginFailedLabel = loginFailedLabel
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 )
@@ -249,6 +323,95 @@ fun NoteListScreen(
             }
         )
     }
+}
+
+private fun startGoogleLogin(
+    context: Context,
+    googleSignInLauncher: (Intent) -> Unit,
+    googleClientIdMissingLabel: String,
+    loginFailedLabel: String
+) {
+    val activity = context as? Activity ?: run {
+        Toast.makeText(context, loginFailedLabel, Toast.LENGTH_LONG).show()
+        return
+    }
+    val webClientId = resolveWebClientId(context)
+    if (webClientId.isBlank() || webClientId == "YOUR_FIREBASE_WEB_CLIENT_ID") {
+        Toast.makeText(context, googleClientIdMissingLabel, Toast.LENGTH_LONG).show()
+        return
+    }
+
+    val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(webClientId)
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(activity, options)
+    googleSignInLauncher(googleSignInClient.signInIntent)
+}
+
+private fun logoutFromFirebaseAndGoogle(
+    context: Context,
+    logoutSuccessLabel: String,
+    logoutFailedLabel: String
+) {
+    FirebaseAuth.getInstance().signOut()
+
+    val webClientId = resolveWebClientId(context)
+    val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(webClientId)
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, options)
+    googleSignInClient.signOut()
+        .addOnSuccessListener {
+            Toast.makeText(context, logoutSuccessLabel, Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, logoutFailedLabel, Toast.LENGTH_LONG).show()
+        }
+}
+
+private fun resolveWebClientId(context: Context): String {
+    val generatedClientIdResId = context.resources.getIdentifier(
+        "default_web_client_id",
+        "string",
+        context.packageName
+    )
+    return if (generatedClientIdResId != 0) {
+        context.getString(generatedClientIdResId)
+    } else {
+        context.getString(R.string.firebase_web_client_id)
+    }
+}
+
+private fun loginToFirebaseWithGoogleAccount(
+    context: Context,
+    account: GoogleSignInAccount,
+    loginSuccessLabel: String,
+    accountCreatedLabel: String,
+    loginFailedLabel: String,
+    firebaseNotConfiguredLabel: String
+) {
+    Firebase.initialize(context)
+    val auth = runCatching { FirebaseAuth.getInstance() }
+        .getOrElse {
+            Toast.makeText(context, firebaseNotConfiguredLabel, Toast.LENGTH_LONG).show()
+            return
+        }
+    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+    auth.signInWithCredential(credential)
+        .addOnSuccessListener { authResult ->
+            val message = if (authResult.additionalUserInfo?.isNewUser == true) {
+                accountCreatedLabel
+            } else {
+                loginSuccessLabel
+            }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            val message = it.localizedMessage ?: loginFailedLabel
+            Toast.makeText(context, "$loginFailedLabel: $message", Toast.LENGTH_LONG).show()
+        }
 }
 
 

@@ -13,5 +13,15 @@
     <string name="menu">Menu</string>
     <string name="change_wallpaper">Change wallpaper</string>
     <string name="login">Login</string>
+    <string name="login_success">Logged in to Firebase</string>
+    <string name="login_new_account_created">Logged in and created a new Firebase account</string>
+    <string name="login_failed">Firebase login failed</string>
+    <string name="login_canceled">Login canceled</string>
+    <string name="firebase_not_configured">Firebase is not configured. Please check project settings.</string>
+    <string name="google_client_id_missing">Google client ID is not configured. Set firebase_web_client_id.</string>
+    <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
     <string name="wallpaper_set_failed">Failed to set wallpaper</string>
+    <string name="logout">Logout</string>
+    <string name="logout_success">Logged out</string>
+    <string name="logout_failed">Logout failed</string>
 </resources>

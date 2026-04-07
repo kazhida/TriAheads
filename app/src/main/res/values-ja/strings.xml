@@ -13,5 +13,15 @@
     <string name="menu">メニュー</string>
     <string name="change_wallpaper">壁紙の変更</string>
     <string name="login">ログイン</string>
+    <string name="login_success">Firebaseにログインしました</string>
+    <string name="login_new_account_created">Firebaseにログインし、新規アカウントを作成しました</string>
+    <string name="login_failed">Firebaseログインに失敗しました</string>
+    <string name="login_canceled">ログインをキャンセルしました</string>
+    <string name="firebase_not_configured">Firebaseが未設定です。プロジェクト設定を確認してください</string>
+    <string name="google_client_id_missing">GoogleクライアントIDが未設定です。firebase_web_client_idを設定してください</string>
+    <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
     <string name="wallpaper_set_failed">壁紙の設定に失敗しました</string>
+    <string name="logout">ログアウト</string>
+    <string name="logout_success">ログアウトしました</string>
+    <string name="logout_failed">ログアウトに失敗しました</string>
 </resources>
