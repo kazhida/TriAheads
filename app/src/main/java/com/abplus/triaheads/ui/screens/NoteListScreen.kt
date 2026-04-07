@@ -1,9 +1,12 @@
 package com.abplus.triaheads.ui.screens
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.speech.RecognizerIntent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -15,11 +18,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -49,6 +56,9 @@ import com.abplus.triaheads.ui.components.NoteList
 import com.abplus.triaheads.ui.theme.FabColor
 import com.abplus.triaheads.ui.theme.White
 import com.abplus.triaheads.viewmodel.NoteViewModel
+import java.io.File
+
+private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +72,13 @@ fun NoteListScreen(
     val deleteDialogMessage = stringResource(id = R.string.delete_note_dialog_message)
     val okLabel = stringResource(id = R.string.ok)
     val cancelLabel = stringResource(id = R.string.cancel)
+    val menuDescription = stringResource(id = R.string.menu)
+    val changeWallpaperLabel = stringResource(id = R.string.change_wallpaper)
+    val loginLabel = stringResource(id = R.string.login)
     val notes by noteViewModel.notes.collectAsState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
+    var wallpaperVersion by remember { mutableStateOf(0) }
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -76,6 +91,27 @@ fun NoteListScreen(
             .orEmpty()
 
         noteViewModel.addNoteFromSpeech(speechText)
+    }
+    val wallpaperPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+
+        val wallpaperSaved = runCatching {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val outputFile = File(context.filesDir, WALLPAPER_FILE_NAME)
+                outputFile.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+                true
+            } ?: false
+        }.getOrDefault(false)
+
+        if (wallpaperSaved) {
+            wallpaperVersion += 1
+        } else {
+            Toast.makeText(context, R.string.wallpaper_set_failed, Toast.LENGTH_SHORT).show()
+        }
     }
     LaunchedEffect(noteViewModel) {
         noteViewModel.shareRequests.collect { note ->
@@ -90,12 +126,8 @@ fun NoteListScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        val backgroundBitmap = remember(context) {
-            runCatching {
-                context.assets.open("images/wp001.jpg").use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
-            }.getOrNull()
+        val backgroundBitmap = remember(context, wallpaperVersion) {
+            loadBackgroundBitmap(context)
         }
 
         backgroundBitmap?.let { bitmap ->
@@ -110,7 +142,7 @@ fun NoteListScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = White.copy(alpha = 0.75f))
+                .background(color = White.copy(alpha = 0.5f))
         )
 
         Scaffold(
@@ -134,10 +166,39 @@ fun NoteListScreen(
                         )
                     },
                     actions = {
-                        IconButton(onClick = { }) {
+                        IconButton(onClick = { isMenuExpanded = true }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu"
+                                contentDescription = menuDescription
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = isMenuExpanded,
+                            onDismissRequest = { isMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(text = changeWallpaperLabel) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Wallpaper,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    wallpaperPickerLauncher.launch("image/*")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = loginLabel) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Login,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = { isMenuExpanded = false }
                             )
                         }
                     }
@@ -188,6 +249,20 @@ fun NoteListScreen(
             }
         )
     }
+}
+
+
+private fun loadBackgroundBitmap(context: Context): Bitmap? {
+    val customWallpaperFile = File(context.filesDir, WALLPAPER_FILE_NAME)
+    if (customWallpaperFile.exists()) {
+        BitmapFactory.decodeFile(customWallpaperFile.absolutePath)?.let { return it }
+    }
+
+    return runCatching {
+        context.assets.open("images/wp001.jpg").use { inputStream ->
+            BitmapFactory.decodeStream(inputStream)
+        }
+    }.getOrNull()
 }
 
 

@@ -10,4 +10,8 @@
     <string name="edit_note_title">メモ編集</string>
     <string name="note_content_label">内容</string>
     <string name="update">更新</string>
+    <string name="menu">メニュー</string>
+    <string name="change_wallpaper">壁紙の変更</string>
+    <string name="login">ログイン</string>
+    <string name="wallpaper_set_failed">壁紙の設定に失敗しました</string>
 </resources>

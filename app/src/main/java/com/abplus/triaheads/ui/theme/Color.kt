@@ -10,7 +10,7 @@ val Black = Color(0xFF000000)
 
 val White50 = Color(0x80FFFFFF)
 
-val FabColor = Color(0xFFFFFDA6)
+val FabColor = Color(0xFFEF8CF9)
 
 fun agedBlack(createdAt: Long): Color  {
     val age = (System.currentTimeMillis() - createdAt) / (1000 * 60 * 60 * 24)
