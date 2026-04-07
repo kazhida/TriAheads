@@ -10,8 +10,9 @@ kotlin = "2.3.20"
 composeBom = "2026.03.01"
 room = "2.8.4"
 ksp = "2.2.10-2.0.2"
-hilt = "2.59.2"
+hilt = "2.57.1"
 navigationCompose = "2.9.7"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
