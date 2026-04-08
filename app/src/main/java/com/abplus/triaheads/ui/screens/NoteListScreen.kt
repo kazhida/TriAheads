@@ -1,5 +1,6 @@
 package com.abplus.triaheads.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -8,11 +9,15 @@ import android.graphics.BitmapFactory
 import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -20,6 +25,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -35,12 +41,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -49,6 +57,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abplus.triaheads.R
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.theme.BlueGrey40
@@ -64,10 +73,12 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.initialize
+import coil.compose.AsyncImage
 import java.io.File
 
 private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
 
+@SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteListScreen(
@@ -92,7 +103,7 @@ fun NoteListScreen(
     val googleClientIdMissingLabel = stringResource(id = R.string.google_client_id_missing)
     val logoutSuccessLabel = stringResource(id = R.string.logout_success)
     val logoutFailedLabel = stringResource(id = R.string.logout_failed)
-    val notes by noteViewModel.notes.collectAsState()
+    val notes by noteViewModel.notes.collectAsState<List<NoteEntity>>()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var wallpaperVersion by remember { mutableStateOf(0) }
@@ -130,7 +141,7 @@ fun NoteListScreen(
             Toast.makeText(context, R.string.wallpaper_set_failed, Toast.LENGTH_SHORT).show()
         }
     }
-    val googleSignInLauncher = rememberLauncherForActivityResult(
+    val googleSignInLauncher = rememberLauncherForActivityResult<Intent, ActivityResult>(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
@@ -168,6 +179,18 @@ fun NoteListScreen(
             }
         }
     }
+    val auth = remember { FirebaseAuth.getInstance() }
+    var user by remember { mutableStateOf(auth.currentUser) }
+    DisposableEffect(auth) {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            user = firebaseAuth.currentUser
+        }
+        auth.addAuthStateListener(authStateListener)
+        onDispose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
+    val isLoggedIn = user != null
 
     Box(modifier = Modifier.fillMaxSize()) {
         val backgroundBitmap = remember(context, wallpaperVersion) {
@@ -211,10 +234,21 @@ fun NoteListScreen(
                     },
                     actions = {
                         IconButton(onClick = { isMenuExpanded = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = menuDescription
-                            )
+                            if (isLoggedIn) {
+                                AsyncImage(
+                                    model = user?.photoUrl.toString(),
+                                    contentDescription = "remote icon",
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = menuDescription
+                                )
+                            }
                         }
 
                         DropdownMenu(
@@ -234,14 +268,12 @@ fun NoteListScreen(
                                     wallpaperPickerLauncher.launch("image/*")
                                 }
                             )
-                            val user = FirebaseAuth.getInstance().currentUser
-                            val isLoggedIn = user != null
                             if (isLoggedIn) {
                                 DropdownMenuItem(
                                     text = { Text(text = logoutLabel) },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.Login,
+                                            imageVector = Icons.AutoMirrored.Filled.Logout,
                                             contentDescription = null
                                         )
                                     },
@@ -342,7 +374,7 @@ private fun startGoogleLogin(
     }
 
     val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(webClientId)
+        .requestIdToken(/* serverClientId = */ webClientId)
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(activity, options)
@@ -358,7 +390,7 @@ private fun logoutFromFirebaseAndGoogle(
 
     val webClientId = resolveWebClientId(context)
     val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(webClientId)
+        .requestIdToken(/* serverClientId = */ webClientId)
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(context, options)

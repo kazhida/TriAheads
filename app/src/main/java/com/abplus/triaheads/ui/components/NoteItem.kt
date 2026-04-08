@@ -58,6 +58,18 @@ fun NoteItem(
                 )
             }
             Column(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Created: ${note.createdAt.toDisplayDateTime()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                )
+                Text(
+                    text = "Updated: ${note.updatedAt.toDisplayDateTime()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -80,17 +92,6 @@ fun NoteItem(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "Created: ${note.createdAt.toDisplayDateTime()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                )
-                Text(
-                    text = "Updated: ${note.updatedAt.toDisplayDateTime()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                )
             }
         }
     }
