@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -178,6 +179,18 @@ fun NoteListScreen(
             }
         }
     }
+    val auth = remember { FirebaseAuth.getInstance() }
+    var user by remember { mutableStateOf(auth.currentUser) }
+    DisposableEffect(auth) {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            user = firebaseAuth.currentUser
+        }
+        auth.addAuthStateListener(authStateListener)
+        onDispose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
+    val isLoggedIn = user != null
 
     Box(modifier = Modifier.fillMaxSize()) {
         val backgroundBitmap = remember(context, wallpaperVersion) {
@@ -198,9 +211,6 @@ fun NoteListScreen(
                 .fillMaxSize()
                 .background(color = White.copy(alpha = 0.5f))
         )
-
-        val user = FirebaseAuth.getInstance().currentUser
-        val isLoggedIn = user != null
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -226,7 +236,7 @@ fun NoteListScreen(
                         IconButton(onClick = { isMenuExpanded = true }) {
                             if (isLoggedIn) {
                                 AsyncImage(
-                                    model = user.photoUrl.toString(),
+                                    model = user?.photoUrl.toString(),
                                     contentDescription = "remote icon",
                                     modifier = Modifier
                                         .size(56.dp)
