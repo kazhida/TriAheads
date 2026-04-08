@@ -45,7 +45,6 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             noteRepository.insert(NoteEntity(content = content))
             _scrollToTopRequests.tryEmit(Unit)
-            refreshNotes()
         }
     }
 
@@ -57,14 +56,12 @@ class NoteViewModel @Inject constructor(
     fun updateNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.update(note)
-            refreshNotes()
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.delete(note)
-            refreshNotes()
         }
     }
 
