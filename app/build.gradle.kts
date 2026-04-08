@@ -59,6 +59,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
+    implementation(libs.coil.compose)
     ksp(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.androidx.room.testing)
