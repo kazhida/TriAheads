@@ -20,11 +20,22 @@ class NoteViewModel @Inject constructor(
 ) : ViewModel() {
     private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
     val notes: StateFlow<List<NoteEntity>> = _notes.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    private val _refreshCompleted = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val refreshCompleted: SharedFlow<Unit> = _refreshCompleted.asSharedFlow()
+    private val _scrollToTopRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val scrollToTopRequests: SharedFlow<Unit> = _scrollToTopRequests.asSharedFlow()
     private val _shareRequests = MutableSharedFlow<NoteEntity>(extraBufferCapacity = 1)
     val shareRequests: SharedFlow<NoteEntity> = _shareRequests.asSharedFlow()
 
     init {
-        loadNotes()
+        viewModelScope.launch {
+            noteRepository.observeAllNotes().collect { latest ->
+                _notes.value = latest
+            }
+        }
+        refreshNotes()
     }
 
     fun addNoteFromSpeech(speechText: String) {
@@ -33,7 +44,8 @@ class NoteViewModel @Inject constructor(
 
         viewModelScope.launch {
             noteRepository.insert(NoteEntity(content = content))
-            loadNotes()
+            _scrollToTopRequests.tryEmit(Unit)
+            refreshNotes()
         }
     }
 
@@ -45,20 +57,26 @@ class NoteViewModel @Inject constructor(
     fun updateNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.update(note)
-            loadNotes()
+            refreshNotes()
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.delete(note)
-            loadNotes()
+            refreshNotes()
         }
     }
 
-    private fun loadNotes() {
+    fun refreshNotes() {
+        if (_isRefreshing.value) return
         viewModelScope.launch {
-            _notes.value = noteRepository.getAllNotes()
+            _isRefreshing.value = true
+            _notes.value = runCatching {
+                noteRepository.getAllNotes()
+            }.getOrElse { _notes.value }
+            _isRefreshing.value = false
+            _refreshCompleted.tryEmit(Unit)
         }
     }
 }

@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
     implementation(libs.play.services.auth)
     implementation(libs.coil.compose)
     ksp(libs.hilt.android.compiler)

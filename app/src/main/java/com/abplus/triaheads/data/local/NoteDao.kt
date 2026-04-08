@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.abplus.triaheads.data.NoteEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
@@ -18,6 +19,9 @@ interface NoteDao {
 
     @Update
     suspend fun update(note: NoteEntity)
+
+    @Query("SELECT * FROM notes ORDER BY updatedAt DESC")
+    fun observeAllNotes(): Flow<List<NoteEntity>>
 
     @Query("SELECT * FROM notes ORDER BY updatedAt DESC")
     suspend fun getAllNotes(): List<NoteEntity>

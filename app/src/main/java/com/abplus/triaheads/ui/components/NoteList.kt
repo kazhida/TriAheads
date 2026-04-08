@@ -6,43 +6,57 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.ui.theme.TriAheadsTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteList(
     notes: List<NoteEntity>,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
     onShareClick: (NoteEntity) -> Unit = {},
     onEditClick: (NoteEntity) -> Unit = {},
     onDeleteClick: (NoteEntity) -> Unit = {},
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(16.dp),
     bottomPadding: PaddingValues = PaddingValues(56.dp)
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxSize()
     ) {
-        items(
-            items = notes,
-            key = { it.id }
-        ) { note ->
-            NoteItem(
-                note = note,
-                onShareClick = { onShareClick(note) },
-                onEditClick = { onEditClick(note) },
-                onDeleteClick = { onDeleteClick(note) }
-            )
-        }
-        if (bottomPadding != PaddingValues.Zero) {
-            item {
-                Spacer(modifier = Modifier.padding(bottomPadding))
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = contentPadding,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(
+                items = notes,
+                key = { it.id }
+            ) { note ->
+                NoteItem(
+                    note = note,
+                    onShareClick = { onShareClick(note) },
+                    onEditClick = { onEditClick(note) },
+                    onDeleteClick = { onDeleteClick(note) }
+                )
+            }
+            if (bottomPadding != PaddingValues.Zero) {
+                item {
+                    Spacer(modifier = Modifier.padding(bottomPadding))
+                }
             }
         }
     }
@@ -60,7 +74,8 @@ private fun NoteListPreview() {
                     createdAt = System.currentTimeMillis(),
                     updatedAt = System.currentTimeMillis()
                 )
-            }
+            },
+            listState = androidx.compose.foundation.lazy.rememberLazyListState()
         )
     }
 }

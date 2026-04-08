@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -104,6 +105,8 @@ fun NoteListScreen(
     val logoutSuccessLabel = stringResource(id = R.string.logout_success)
     val logoutFailedLabel = stringResource(id = R.string.logout_failed)
     val notes by noteViewModel.notes.collectAsState<List<NoteEntity>>()
+    val isRefreshing by noteViewModel.isRefreshing.collectAsState()
+    val listState = rememberLazyListState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var wallpaperVersion by remember { mutableStateOf(0) }
@@ -165,7 +168,8 @@ fun NoteListScreen(
             loginSuccessLabel = loginSuccessLabel,
             accountCreatedLabel = accountCreatedLabel,
             loginFailedLabel = loginFailedLabel,
-            firebaseNotConfiguredLabel = firebaseNotConfiguredLabel
+            firebaseNotConfiguredLabel = firebaseNotConfiguredLabel,
+            onLoginSuccess = noteViewModel::refreshNotes
         )
     }
     LaunchedEffect(noteViewModel) {
@@ -176,6 +180,20 @@ fun NoteListScreen(
             }
             if (shareIntent.resolveActivity(context.packageManager) != null) {
                 context.startActivity(Intent.createChooser(shareIntent, chooserTitle))
+            }
+        }
+    }
+    LaunchedEffect(noteViewModel, listState) {
+        noteViewModel.scrollToTopRequests.collect {
+            if (listState.layoutInfo.totalItemsCount > 0) {
+                listState.animateScrollToItem(0)
+            }
+        }
+    }
+    LaunchedEffect(noteViewModel, listState) {
+        noteViewModel.refreshCompleted.collect {
+            if (listState.layoutInfo.totalItemsCount > 0) {
+                listState.animateScrollToItem(0)
             }
         }
     }
@@ -282,7 +300,8 @@ fun NoteListScreen(
                                         logoutFromFirebaseAndGoogle(
                                             context = context,
                                             logoutSuccessLabel = logoutSuccessLabel,
-                                            logoutFailedLabel = logoutFailedLabel
+                                            logoutFailedLabel = logoutFailedLabel,
+                                            onLogoutSuccess = noteViewModel::refreshNotes
                                         )
                                     }
                                 )
@@ -325,9 +344,12 @@ fun NoteListScreen(
         { innerPadding ->
             NoteList(
                 notes = notes,
+                listState = listState,
                 onShareClick = noteViewModel::shareNote,
                 onEditClick = onEditClick,
                 onDeleteClick = { selectedNote -> notePendingDeletion = selectedNote },
+                isRefreshing = isRefreshing,
+                onRefresh = noteViewModel::refreshNotes,
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -384,7 +406,8 @@ private fun startGoogleLogin(
 private fun logoutFromFirebaseAndGoogle(
     context: Context,
     logoutSuccessLabel: String,
-    logoutFailedLabel: String
+    logoutFailedLabel: String,
+    onLogoutSuccess: () -> Unit
 ) {
     FirebaseAuth.getInstance().signOut()
 
@@ -397,6 +420,7 @@ private fun logoutFromFirebaseAndGoogle(
     googleSignInClient.signOut()
         .addOnSuccessListener {
             Toast.makeText(context, logoutSuccessLabel, Toast.LENGTH_SHORT).show()
+            onLogoutSuccess()
         }
         .addOnFailureListener {
             Toast.makeText(context, logoutFailedLabel, Toast.LENGTH_LONG).show()
@@ -422,7 +446,8 @@ private fun loginToFirebaseWithGoogleAccount(
     loginSuccessLabel: String,
     accountCreatedLabel: String,
     loginFailedLabel: String,
-    firebaseNotConfiguredLabel: String
+    firebaseNotConfiguredLabel: String,
+    onLoginSuccess: () -> Unit
 ) {
     Firebase.initialize(context)
     val auth = runCatching { FirebaseAuth.getInstance() }
@@ -439,6 +464,7 @@ private fun loginToFirebaseWithGoogleAccount(
                 loginSuccessLabel
             }
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            onLoginSuccess()
         }
         .addOnFailureListener {
             val message = it.localizedMessage ?: loginFailedLabel
@@ -481,6 +507,7 @@ fun NoteListScreenPreview() {
     NoteList(
         notes = listOf(
             NoteEntity(id = 1, content = "Sample note")
-        )
+        ),
+        listState = rememberLazyListState()
     )
 }

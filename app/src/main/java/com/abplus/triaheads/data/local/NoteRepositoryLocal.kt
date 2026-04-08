@@ -4,6 +4,7 @@ import com.abplus.triaheads.data.NoteEntity
 import com.abplus.triaheads.data.NoteRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 class NoteRepositoryLocal @Inject constructor(
@@ -19,6 +20,10 @@ class NoteRepositoryLocal @Inject constructor(
 
     override suspend fun update(note: NoteEntity) {
         noteDao.update(note.copy(updatedAt = System.currentTimeMillis()))
+    }
+
+    override fun observeAllNotes(): Flow<List<NoteEntity>> {
+        return noteDao.observeAllNotes()
     }
 
     override suspend fun getAllNotes(): List<NoteEntity> {
