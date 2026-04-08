@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -56,9 +58,7 @@ fun NoteItem(
                     color = agedBlack(note.createdAt),
                     style = MaterialTheme.typography.bodyLarge
                 )
-            }
-            Column(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Created: ${note.createdAt.toDisplayDateTime()}",
                     style = MaterialTheme.typography.bodySmall,
@@ -69,7 +69,8 @@ fun NoteItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
                 )
-                Spacer(modifier = Modifier.weight(1f))
+            }
+            Column(modifier = Modifier.fillMaxHeight().wrapContentWidth()) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
