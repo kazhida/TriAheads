@@ -2,7 +2,9 @@ package com.abplus.triaheads.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -19,7 +21,8 @@ fun NoteList(
     onShareClick: (NoteEntity) -> Unit = {},
     onEditClick: (NoteEntity) -> Unit = {},
     onDeleteClick: (NoteEntity) -> Unit = {},
-    contentPadding: PaddingValues = PaddingValues(16.dp)
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    bottomPadding: PaddingValues = PaddingValues(56.dp)
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -36,6 +39,11 @@ fun NoteList(
                 onEditClick = { onEditClick(note) },
                 onDeleteClick = { onDeleteClick(note) }
             )
+        }
+        if (bottomPadding != PaddingValues.Zero) {
+            item {
+                Spacer(modifier = Modifier.padding(bottomPadding))
+            }
         }
     }
 }
