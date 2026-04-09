@@ -111,6 +111,7 @@ fun NoteListScreen(
     val logoutFailedLabel = stringResource(id = R.string.logout_failed)
     val notes by noteViewModel.notes.collectAsState<List<NoteEntity>>()
     val isRefreshing by noteViewModel.isRefreshing.collectAsState()
+    val scrollToTopOnNextList by noteViewModel.scrollToTopOnNextList.collectAsState()
     val listState = rememberLazyListState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -201,6 +202,13 @@ fun NoteListScreen(
                 listState.animateScrollToItem(0)
             }
         }
+    }
+    LaunchedEffect(scrollToTopOnNextList, listState, notes.size) {
+        if (!scrollToTopOnNextList) return@LaunchedEffect
+        if (notes.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+        noteViewModel.onScrollToTopHandled()
     }
     val auth = remember { FirebaseAuth.getInstance() }
     var user by remember { mutableStateOf(auth.currentUser) }
@@ -336,7 +344,7 @@ fun NoteListScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    modifier = Modifier.offset(x = -16.dp),
+                    modifier = Modifier.offset(x = -8.dp),
                     containerColor = FabColor,
                     onClick = { onFabClick(speechLauncher::launch) }
                 ) {

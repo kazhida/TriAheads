@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,7 +51,10 @@ fun NoteItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f).padding(8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onEditClick)
+                    .padding(8.dp)
             ) {
                 Text(
                     text = note.content,
@@ -78,12 +81,6 @@ fun NoteItem(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share note"
-                        )
-                    }
-                    IconButton(onClick = onEditClick) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit note"
                         )
                     }
                     IconButton(onClick = onDeleteClick) {

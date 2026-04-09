@@ -10,6 +10,8 @@
     <string name="edit_note_title">Edit note</string>
     <string name="note_content_label">Content</string>
     <string name="update">Update</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
     <string name="menu">Menu</string>
     <string name="change_wallpaper">Change wallpaper</string>
     <string name="login">Login</string>

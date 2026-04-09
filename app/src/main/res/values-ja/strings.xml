@@ -10,6 +10,8 @@
     <string name="edit_note_title">メモ編集</string>
     <string name="note_content_label">内容</string>
     <string name="update">更新</string>
+    <string name="edit">編集</string>
+    <string name="delete">削除</string>
     <string name="menu">メニュー</string>
     <string name="change_wallpaper">壁紙の変更</string>
     <string name="login">ログイン</string>

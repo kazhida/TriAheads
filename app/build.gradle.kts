@@ -9,12 +9,12 @@ plugins {
 android {
     namespace = "com.abplus.triaheads"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "com.abplus.triaheads"
-        minSdk = 30
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
