@@ -32,4 +32,5 @@
     <string name="delete_account_success">アカウントを削除しました</string>
     <string name="delete_account_failed">アカウント削除に失敗しました</string>
     <string name="delete_account_reauth_required">現在のGoogleアカウントを確認できませんでした。同じアカウントで再ログインしてから、もう一度お試しください</string>
+    <string name="delete_account_account_mismatch">現在のGoogleアカウントが、削除対象のFirebaseアカウントと一致しません</string>
 </resources>

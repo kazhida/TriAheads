@@ -12,9 +12,11 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.random.Random
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -78,6 +80,9 @@ class NoteRepositoryFirestore @Inject constructor(
         awaitClose {
             registration.remove()
         }
+    }.retryWhen { _, _ ->
+        delay(1_000L)
+        firebaseAuth.currentUser != null
     }
 
     override suspend fun getAllNotes(): List<NoteEntity> {

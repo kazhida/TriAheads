@@ -32,4 +32,5 @@
     <string name="delete_account_success">Account deleted</string>
     <string name="delete_account_failed">Account deletion failed</string>
     <string name="delete_account_reauth_required">Could not confirm the current Google account. Please log in again with the same account and retry.</string>
+    <string name="delete_account_account_mismatch">The current Google account does not match the Firebase account to delete.</string>
 </resources>
