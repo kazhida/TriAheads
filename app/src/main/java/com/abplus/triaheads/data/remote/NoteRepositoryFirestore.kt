@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class NoteRepositoryFirestore @Inject constructor(
@@ -81,7 +82,7 @@ class NoteRepositoryFirestore @Inject constructor(
             registration.remove()
         }
     }.retryWhen { _, _ ->
-        delay(1_000L)
+        delay(1_000L.milliseconds)
         firebaseAuth.currentUser != null
     }
 
@@ -116,7 +117,7 @@ class NoteRepositoryFirestore @Inject constructor(
     }
 
     private suspend fun awaitPendingWrites() {
-        withTimeoutOrNull(15_000L) {
+        withTimeoutOrNull(15_000L.milliseconds) {
             firestore.waitForPendingWrites().awaitResult()
         }
     }
