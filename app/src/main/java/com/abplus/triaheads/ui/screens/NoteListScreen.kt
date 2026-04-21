@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -95,7 +97,8 @@ private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
 @Composable
 fun NoteListScreen(
     noteViewModel: NoteViewModel,
-    onEditClick: (NoteEntity) -> Unit
+    onEditClick: (NoteEntity) -> Unit,
+    onLicensesClick: () -> Unit
 ) {
     val context = LocalContext.current
     val chooserTitle = stringResource(id = R.string.share_note_chooser_title)
@@ -116,6 +119,7 @@ fun NoteListScreen(
     val changeWallpaperLabel = stringResource(id = R.string.change_wallpaper)
     val loginLabel = stringResource(id = R.string.login)
     val logoutLabel = stringResource(id = R.string.logout)
+    val licenseLabel = stringResource(id = R.string.license)
     val loginSuccessLabel = stringResource(id = R.string.login_success)
     val accountCreatedLabel = stringResource(id = R.string.login_new_account_created)
     val loginFailedLabel = stringResource(id = R.string.login_failed)
@@ -399,6 +403,20 @@ fun NoteListScreen(
                                     }
                                 )
                             }
+                            DropdownMenuItem(
+                                enabled = !isAuthOperationInProgress,
+                                text = { Text(text = licenseLabel) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Description,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    onLicensesClick()
+                                }
+                            )
                         }
                     }
                 )
