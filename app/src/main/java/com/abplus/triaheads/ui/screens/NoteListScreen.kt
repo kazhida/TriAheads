@@ -283,14 +283,6 @@ fun NoteListScreen(
                         titleContentColor = White,
                         actionIconContentColor = White
                     ),
-                    navigationIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_appbar),
-                            contentDescription = "App icon",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(36.dp).padding(start = 8.dp)
-                        )
-                    },
                     actions = {
                         IconButton(
                             enabled = !isAuthOperationInProgress,
