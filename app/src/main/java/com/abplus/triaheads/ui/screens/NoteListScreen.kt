@@ -106,13 +106,7 @@ fun NoteListScreen(
     val deleteDialogMessage = stringResource(id = R.string.delete_note_dialog_message)
     val deleteAccountDialogTitle = stringResource(id = R.string.delete_account_dialog_title)
     val deleteAccountDialogMessage = stringResource(id = R.string.delete_account_dialog_message)
-    val appBarTitle = buildAnnotatedString {
-        append("とりあへ")
-        withStyle(SpanStyle(fontSize = 12.sp)) {
-            append("っ")
-        }
-        append("ず")
-    }
+    val appBarTitle = stringResource(id = R.string.app_title)
     val okLabel = stringResource(id = R.string.ok)
     val cancelLabel = stringResource(id = R.string.cancel)
     val menuDescription = stringResource(id = R.string.menu)
