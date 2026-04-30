@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.speech.RecognizerIntent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -82,7 +83,9 @@ import com.abplus.triaheads.viewmodel.NoteViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -91,6 +94,7 @@ import coil.compose.AsyncImage
 import java.io.File
 
 private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
+private const val TAG = "NoteListScreen"
 
 @SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,6 +123,8 @@ fun NoteListScreen(
     val loginFailedLabel = stringResource(id = R.string.login_failed)
     val firebaseNotConfiguredLabel = stringResource(id = R.string.firebase_not_configured)
     val loginCanceledLabel = stringResource(id = R.string.login_canceled)
+    val googleSignInDeveloperErrorLabel = stringResource(id = R.string.google_sign_in_developer_error)
+    val googleSignInInProgressLabel = stringResource(id = R.string.google_sign_in_in_progress)
     val googleClientIdMissingLabel = stringResource(id = R.string.google_client_id_missing)
     val logoutSuccessLabel = stringResource(id = R.string.logout_success)
     val logoutFailedLabel = stringResource(id = R.string.logout_failed)
@@ -173,20 +179,29 @@ fun NoteListScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult<Intent, ActivityResult>(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
-            isAuthOperationInProgress = false
-            Toast.makeText(context, loginCanceledLabel, Toast.LENGTH_SHORT).show()
-            return@rememberLauncherForActivityResult
-        }
-
-        val account = runCatching {
+        val accountResult = runCatching {
             GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 .getResult(ApiException::class.java)
-        }.getOrNull()
+        }
+        val account = accountResult.getOrNull()
 
         if (account?.idToken.isNullOrBlank()) {
             isAuthOperationInProgress = false
-            Toast.makeText(context, loginFailedLabel, Toast.LENGTH_LONG).show()
+            val apiException = accountResult.exceptionOrNull() as? ApiException
+            if (apiException != null) {
+                Log.w(TAG, "Google sign-in failed: statusCode=${apiException.statusCode}", apiException)
+            } else {
+                Log.w(TAG, "Google sign-in failed: resultCode=${result.resultCode}, idToken is missing")
+            }
+            val message = googleSignInFailureMessage(
+                apiException = apiException,
+                resultCode = result.resultCode,
+                loginCanceledLabel = loginCanceledLabel,
+                loginFailedLabel = loginFailedLabel,
+                googleSignInDeveloperErrorLabel = googleSignInDeveloperErrorLabel,
+                googleSignInInProgressLabel = googleSignInInProgressLabel
+            )
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             return@rememberLauncherForActivityResult
         }
 
@@ -689,6 +704,31 @@ private fun createGoogleSignInOptions(webClientId: String): GoogleSignInOptions 
         .requestIdToken(/* serverClientId = */ webClientId)
         .requestEmail()
         .build()
+}
+
+private fun googleSignInFailureMessage(
+    apiException: ApiException?,
+    resultCode: Int,
+    loginCanceledLabel: String,
+    loginFailedLabel: String,
+    googleSignInDeveloperErrorLabel: String,
+    googleSignInInProgressLabel: String
+): String {
+    val statusCode = apiException?.statusCode
+    return when (statusCode) {
+        GoogleSignInStatusCodes.SIGN_IN_CANCELLED,
+        CommonStatusCodes.CANCELED -> loginCanceledLabel
+        CommonStatusCodes.DEVELOPER_ERROR -> "$loginFailedLabel: $googleSignInDeveloperErrorLabel ($statusCode)"
+        GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS -> "$loginFailedLabel: $googleSignInInProgressLabel ($statusCode)"
+        null -> {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                loginCanceledLabel
+            } else {
+                "$loginFailedLabel: resultCode=$resultCode"
+            }
+        }
+        else -> "$loginFailedLabel: ${apiException.status.statusMessage ?: "statusCode=$statusCode"} ($statusCode)"
+    }
 }
 
 private fun resolveWebClientId(context: Context): String {

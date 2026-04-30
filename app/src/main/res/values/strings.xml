@@ -23,6 +23,8 @@
     <string name="login_new_account_created">Logged in and created a new Firebase account</string>
     <string name="login_failed">Firebase login failed</string>
     <string name="login_canceled">Login canceled</string>
+    <string name="google_sign_in_developer_error">Google Sign-In is not configured for this app. Check Firebase SHA certificate fingerprints and the web client ID.</string>
+    <string name="google_sign_in_in_progress">Google Sign-In is already in progress.</string>
     <string name="firebase_not_configured">Firebase is not configured. Please check project settings.</string>
     <string name="google_client_id_missing">Google client ID is not configured. Set firebase_web_client_id.</string>
     <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
