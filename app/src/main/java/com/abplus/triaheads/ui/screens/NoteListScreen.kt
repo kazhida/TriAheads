@@ -87,7 +87,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.initialize
 import coil.compose.AsyncImage
@@ -121,6 +123,7 @@ fun NoteListScreen(
     val loginSuccessLabel = stringResource(id = R.string.login_success)
     val accountCreatedLabel = stringResource(id = R.string.login_new_account_created)
     val loginFailedLabel = stringResource(id = R.string.login_failed)
+    val authErrorTitle = stringResource(id = R.string.auth_error_title)
     val firebaseNotConfiguredLabel = stringResource(id = R.string.firebase_not_configured)
     val loginCanceledLabel = stringResource(id = R.string.login_canceled)
     val googleSignInDeveloperErrorLabel = stringResource(id = R.string.google_sign_in_developer_error)
@@ -139,6 +142,7 @@ fun NoteListScreen(
     val listState = rememberLazyListState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isDeleteAccountDialogVisible by remember { mutableStateOf(false) }
+    var authErrorMessage by remember { mutableStateOf<String?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isAuthOperationInProgress by remember { mutableStateOf(false) }
     var wallpaperVersion by remember { mutableStateOf(0) }
@@ -201,6 +205,7 @@ fun NoteListScreen(
                 googleSignInDeveloperErrorLabel = googleSignInDeveloperErrorLabel,
                 googleSignInInProgressLabel = googleSignInInProgressLabel
             )
+            authErrorMessage = message
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             return@rememberLauncherForActivityResult
         }
@@ -216,8 +221,9 @@ fun NoteListScreen(
                 isAuthOperationInProgress = false
                 noteViewModel.refreshNotes()
             },
-            onLoginFailure = {
+            onLoginFailure = { message ->
                 isAuthOperationInProgress = false
+                authErrorMessage = message
             }
         )
     }
@@ -517,6 +523,19 @@ fun NoteListScreen(
             }
         )
     }
+
+    authErrorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { authErrorMessage = null },
+            title = { Text(text = authErrorTitle) },
+            text = { Text(text = message) },
+            confirmButton = {
+                TextButton(onClick = { authErrorMessage = null }) {
+                    Text(text = okLabel)
+                }
+            }
+        )
+    }
 }
 
 private fun startGoogleLogin(
@@ -727,7 +746,10 @@ private fun googleSignInFailureMessage(
                 "$loginFailedLabel: resultCode=$resultCode"
             }
         }
-        else -> "$loginFailedLabel: ${apiException.status.statusMessage ?: "statusCode=$statusCode"} ($statusCode)"
+        else -> {
+            val statusMessage = apiException.status.statusMessage ?: "statusCode=$statusCode"
+            "$loginFailedLabel: $statusMessage (${apiException::class.java.simpleName}, statusCode=$statusCode)"
+        }
     }
 }
 
@@ -752,13 +774,14 @@ private fun loginToFirebaseWithGoogleAccount(
     loginFailedLabel: String,
     firebaseNotConfiguredLabel: String,
     onLoginSuccess: () -> Unit,
-    onLoginFailure: () -> Unit
+    onLoginFailure: (String) -> Unit
 ) {
     Firebase.initialize(context)
     val auth = runCatching { FirebaseAuth.getInstance() }
-        .getOrElse {
-            Toast.makeText(context, firebaseNotConfiguredLabel, Toast.LENGTH_LONG).show()
-            onLoginFailure()
+        .getOrElse { error ->
+            val message = authFailureMessage(firebaseNotConfiguredLabel, error)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            onLoginFailure(message)
             return
         }
     val credential = GoogleAuthProvider.getCredential(account.idToken, null)
@@ -772,11 +795,28 @@ private fun loginToFirebaseWithGoogleAccount(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             onLoginSuccess()
         }
-        .addOnFailureListener {
-            val message = it.localizedMessage ?: loginFailedLabel
+        .addOnFailureListener { error ->
+            Log.w(TAG, "Firebase sign-in failed", error)
+            val message = authFailureMessage(loginFailedLabel, error)
             Toast.makeText(context, "$loginFailedLabel: $message", Toast.LENGTH_LONG).show()
-            onLoginFailure()
+            onLoginFailure("$loginFailedLabel: $message")
         }
+}
+
+private fun authFailureMessage(
+    fallbackMessage: String,
+    error: Throwable
+): String {
+    val parts = buildList {
+        add(error::class.java.simpleName)
+        if (error is FirebaseAuthException) {
+            add(error.errorCode)
+        } else if (error is FirebaseException) {
+            error.message?.substringBefore(':')?.takeIf { it.isNotBlank() }?.let(::add)
+        }
+    }
+    val detail = error.localizedMessage ?: error.message ?: fallbackMessage
+    return "${parts.joinToString(", ")}: $detail"
 }
 
 

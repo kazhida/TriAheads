@@ -22,6 +22,7 @@
     <string name="login_success">Firebaseにログインしました</string>
     <string name="login_new_account_created">Firebaseにログインし、新規アカウントを作成しました</string>
     <string name="login_failed">Firebaseログインに失敗しました</string>
+    <string name="auth_error_title">ログインエラー</string>
     <string name="login_canceled">ログインをキャンセルしました</string>
     <string name="google_sign_in_developer_error">このアプリのGoogleログイン設定に問題があります。FirebaseのSHA証明書フィンガープリントとWebクライアントIDを確認してください</string>
     <string name="google_sign_in_in_progress">Googleログインを処理中です</string>
