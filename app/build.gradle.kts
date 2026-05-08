@@ -9,15 +9,15 @@ plugins {
 android {
     namespace = "com.abplus.triaheads"
     compileSdk {
-        version = release(37)
+        version = release(36)
     }
 
     defaultConfig {
         applicationId = "com.abplus.triaheads"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 8
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.play.services.auth)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.webkit)
     ksp(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.androidx.room.testing)

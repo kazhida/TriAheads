@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,5 +59,31 @@ class NoteRepositoryLocalTest {
 
         repository.delete(updated!!)
         assertNull(repository.getNoteById(inserted.id))
+    }
+
+    @Test
+    fun addEditDelete_updatesOrderingByUpdatedAt() = runBlocking {
+        repository.insert(NoteEntity(content = "first"))
+        Thread.sleep(20L)
+        repository.insert(NoteEntity(content = "second"))
+
+        val initialNotes = repository.getAllNotes()
+        assertEquals(listOf("second", "first"), initialNotes.map { it.content })
+
+        val firstNote = initialNotes.first { it.content == "first" }
+        val secondNote = initialNotes.first { it.content == "second" }
+        val secondUpdatedAtBeforeEdit = secondNote.updatedAt
+
+        Thread.sleep(20L)
+        repository.update(firstNote.copy(content = "first-updated"))
+
+        val notesAfterEdit = repository.getAllNotes()
+        assertEquals(listOf("first-updated", "second"), notesAfterEdit.map { it.content })
+        assertTrue(notesAfterEdit.first().updatedAt > secondUpdatedAtBeforeEdit)
+
+        repository.delete(notesAfterEdit.first())
+
+        val notesAfterDelete = repository.getAllNotes()
+        assertEquals(listOf("second"), notesAfterDelete.map { it.content })
     }
 }

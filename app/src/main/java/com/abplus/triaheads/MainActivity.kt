@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.abplus.triaheads.ui.screens.LicensesScreen
 import com.abplus.triaheads.ui.screens.NoteEditScreen
 import com.abplus.triaheads.ui.screens.NoteListScreen
 import com.abplus.triaheads.ui.theme.TriAheadsTheme
@@ -23,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private object Route {
         const val NOTE_LIST = "note_list"
+        const val LICENSES = "licenses"
         const val NOTE_ID_ARG = "noteId"
         const val NOTE_EDIT = "note_edit/{$NOTE_ID_ARG}"
         const val NOTE_EDIT_BASE = "note_edit"
@@ -47,7 +49,15 @@ class MainActivity : ComponentActivity() {
                             noteViewModel = noteViewModel,
                             onEditClick = { note ->
                                 navController.navigate("${Route.NOTE_EDIT_BASE}/${note.id}")
+                            },
+                            onLicensesClick = {
+                                navController.navigate(Route.LICENSES)
                             }
+                        )
+                    }
+                    composable(Route.LICENSES) {
+                        LicensesScreen(
+                            onBackClick = { navController.popBackStack() }
                         )
                     }
                     composable(
