@@ -5,18 +5,27 @@
     <string name="share_note_chooser_title">メモを共有</string>
     <string name="delete_note_dialog_title">メモを削除</string>
     <string name="delete_note_dialog_message">このメモを削除しますか？</string>
+    <string name="delete_account_dialog_title">アカウント削除</string>
+    <string name="delete_account_dialog_message">現在ログイン中のアカウントを削除しますか？</string>
     <string name="ok">OK</string>
     <string name="cancel">キャンセル</string>
+    <string name="back">戻る</string>
     <string name="edit_note_title">メモ編集</string>
     <string name="note_content_label">内容</string>
     <string name="update">更新</string>
+    <string name="edit">編集</string>
+    <string name="delete">削除</string>
     <string name="menu">メニュー</string>
+    <string name="license">ライセンス情報</string>
     <string name="change_wallpaper">壁紙の変更</string>
     <string name="login">ログイン</string>
     <string name="login_success">Firebaseにログインしました</string>
     <string name="login_new_account_created">Firebaseにログインし、新規アカウントを作成しました</string>
     <string name="login_failed">Firebaseログインに失敗しました</string>
+    <string name="auth_error_title">ログインエラー</string>
     <string name="login_canceled">ログインをキャンセルしました</string>
+    <string name="google_sign_in_developer_error">このアプリのGoogleログイン設定に問題があります。FirebaseのSHA証明書フィンガープリントとWebクライアントIDを確認してください</string>
+    <string name="google_sign_in_in_progress">Googleログインを処理中です</string>
     <string name="firebase_not_configured">Firebaseが未設定です。プロジェクト設定を確認してください</string>
     <string name="google_client_id_missing">GoogleクライアントIDが未設定です。firebase_web_client_idを設定してください</string>
     <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
@@ -24,4 +33,9 @@
     <string name="logout">ログアウト</string>
     <string name="logout_success">ログアウトしました</string>
     <string name="logout_failed">ログアウトに失敗しました</string>
+    <string name="delete_account">アカウント削除</string>
+    <string name="delete_account_success">アカウントを削除しました</string>
+    <string name="delete_account_failed">アカウント削除に失敗しました</string>
+    <string name="delete_account_reauth_required">現在のGoogleアカウントを確認できませんでした。同じアカウントで再ログインしてから、もう一度お試しください</string>
+    <string name="delete_account_account_mismatch">現在のGoogleアカウントが、削除対象のFirebaseアカウントと一致しません</string>
 </resources>

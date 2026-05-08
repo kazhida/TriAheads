@@ -26,6 +26,8 @@ class NoteViewModel @Inject constructor(
     val refreshCompleted: SharedFlow<Unit> = _refreshCompleted.asSharedFlow()
     private val _scrollToTopRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val scrollToTopRequests: SharedFlow<Unit> = _scrollToTopRequests.asSharedFlow()
+    private val _scrollToTopOnNextList = MutableStateFlow(false)
+    val scrollToTopOnNextList: StateFlow<Boolean> = _scrollToTopOnNextList.asStateFlow()
     private val _shareRequests = MutableSharedFlow<NoteEntity>(extraBufferCapacity = 1)
     val shareRequests: SharedFlow<NoteEntity> = _shareRequests.asSharedFlow()
 
@@ -56,7 +58,12 @@ class NoteViewModel @Inject constructor(
     fun updateNote(note: NoteEntity) {
         viewModelScope.launch {
             noteRepository.update(note)
+            _scrollToTopOnNextList.value = true
         }
+    }
+
+    fun onScrollToTopHandled() {
+        _scrollToTopOnNextList.value = false
     }
 
     fun deleteNote(note: NoteEntity) {
