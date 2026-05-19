@@ -1,7 +1,7 @@
 # TriAheads
 
 TriAheads は、音声入力を使って素早くメモを残せる Android アプリです。  
-未ログイン時はローカル（Room）に保存し、Google ログイン後は Firebase Firestore に保存先を切り替えます。
+未ログイン時はローカル（Room）に保存し、Firebase ログイン後は Firestore に保存先を切り替えます。
 
 ## 主な機能
 
@@ -11,7 +11,7 @@ TriAheads は、音声入力を使って素早くメモを残せる Android ア�
 - メモ共有（他アプリへテキスト送信）
 - プル・トゥ・リフレッシュで再読み込み
 - 壁紙画像の変更（端末内ファイルへ保存）
-- Google ログイン / ログアウト（Firebase Auth）
+- Google / GitHub ログイン、ログアウト（Firebase Auth）
 
 ## 技術スタック
 
@@ -21,6 +21,7 @@ TriAheads は、音声入力を使って素早くメモを残せる Android ア�
 - Hilt
 - Firebase Authentication / Cloud Firestore
 - Google Sign-In（Play Services Auth）
+- Firebase OAuth Provider（GitHub）
 - Coil
 
 ## 動作要件
@@ -40,7 +41,7 @@ TriAheads は、音声入力を使って素早くメモを残せる Android ア�
    - Firebase プロジェクトを作成
    - Android アプリ（`com.abplus.triaheads`）を登録
    - `google-services.json` を `app/` 配下に配置
-   - Google サインインを有効化
+   - Firebase Authentication で Google と GitHub のサインインプロバイダを有効化
 4. Android Studio から実行、または以下でビルド
 
 ```bash

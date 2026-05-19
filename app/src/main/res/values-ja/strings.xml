@@ -19,6 +19,9 @@
     <string name="license">ライセンス情報</string>
     <string name="change_wallpaper">壁紙の変更</string>
     <string name="login">ログイン</string>
+    <string name="login_method_dialog_message">ログイン方法を選択してください。</string>
+    <string name="login_with_google">Googleでログイン</string>
+    <string name="login_with_github">GitHubでログイン</string>
     <string name="login_success">Firebaseにログインしました</string>
     <string name="login_new_account_created">Firebaseにログインし、新規アカウントを作成しました</string>
     <string name="login_failed">Firebaseログインに失敗しました</string>
@@ -26,6 +29,7 @@
     <string name="login_canceled">ログインをキャンセルしました</string>
     <string name="google_sign_in_developer_error">このアプリのGoogleログイン設定に問題があります。FirebaseのSHA証明書フィンガープリントとWebクライアントIDを確認してください</string>
     <string name="google_sign_in_in_progress">Googleログインを処理中です</string>
+    <string name="github_sign_in_in_progress">GitHubログインを処理中です</string>
     <string name="firebase_not_configured">Firebaseが未設定です。プロジェクト設定を確認してください</string>
     <string name="google_client_id_missing">GoogleクライアントIDが未設定です。firebase_web_client_idを設定してください</string>
     <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
@@ -36,6 +40,6 @@
     <string name="delete_account">アカウント削除</string>
     <string name="delete_account_success">アカウントを削除しました</string>
     <string name="delete_account_failed">アカウント削除に失敗しました</string>
-    <string name="delete_account_reauth_required">現在のGoogleアカウントを確認できませんでした。同じアカウントで再ログインしてから、もう一度お試しください</string>
-    <string name="delete_account_account_mismatch">現在のGoogleアカウントが、削除対象のFirebaseアカウントと一致しません</string>
+    <string name="delete_account_reauth_required">現在のアカウントを確認できませんでした。同じアカウントで再ログインしてから、もう一度お試しください</string>
+    <string name="delete_account_account_mismatch">現在のアカウントが、削除対象のFirebaseアカウントと一致しません</string>
 </resources>

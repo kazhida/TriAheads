@@ -16,6 +16,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -90,13 +92,16 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.OAuthProvider
 import com.google.firebase.initialize
 import coil.compose.AsyncImage
 import java.io.File
 
 private const val WALLPAPER_FILE_NAME = "wallpaper.jpg"
 private const val TAG = "NoteListScreen"
+private const val GITHUB_PROVIDER_ID = "github.com"
 
 @SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,6 +123,8 @@ fun NoteListScreen(
     val menuDescription = stringResource(id = R.string.menu)
     val changeWallpaperLabel = stringResource(id = R.string.change_wallpaper)
     val loginLabel = stringResource(id = R.string.login)
+    val loginWithGoogleLabel = stringResource(id = R.string.login_with_google)
+    val loginWithGithubLabel = stringResource(id = R.string.login_with_github)
     val logoutLabel = stringResource(id = R.string.logout)
     val licenseLabel = stringResource(id = R.string.license)
     val loginSuccessLabel = stringResource(id = R.string.login_success)
@@ -129,6 +136,7 @@ fun NoteListScreen(
     val googleSignInDeveloperErrorLabel = stringResource(id = R.string.google_sign_in_developer_error)
     val googleSignInInProgressLabel = stringResource(id = R.string.google_sign_in_in_progress)
     val googleClientIdMissingLabel = stringResource(id = R.string.google_client_id_missing)
+    val githubSignInInProgressLabel = stringResource(id = R.string.github_sign_in_in_progress)
     val logoutSuccessLabel = stringResource(id = R.string.logout_success)
     val logoutFailedLabel = stringResource(id = R.string.logout_failed)
     val deleteAccountLabel = stringResource(id = R.string.delete_account)
@@ -142,6 +150,7 @@ fun NoteListScreen(
     val listState = rememberLazyListState()
     var notePendingDeletion by remember { mutableStateOf<NoteEntity?>(null) }
     var isDeleteAccountDialogVisible by remember { mutableStateOf(false) }
+    var isLoginMethodDialogVisible by remember { mutableStateOf(false) }
     var authErrorMessage by remember { mutableStateOf<String?>(null) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isAuthOperationInProgress by remember { mutableStateOf(false) }
@@ -365,7 +374,7 @@ fun NoteListScreen(
                                     onClick = {
                                         isMenuExpanded = false
                                         isAuthOperationInProgress = true
-                                        logoutFromFirebaseAndGoogle(
+                                        logoutFromFirebaseAndProviders(
                                             context = context,
                                             logoutSuccessLabel = logoutSuccessLabel,
                                             logoutFailedLabel = logoutFailedLabel,
@@ -405,16 +414,7 @@ fun NoteListScreen(
                                     },
                                     onClick = {
                                         isMenuExpanded = false
-                                        isAuthOperationInProgress = true
-                                        startGoogleLogin(
-                                            context = context,
-                                            googleSignInLauncher = googleSignInLauncher::launch,
-                                            googleClientIdMissingLabel = googleClientIdMissingLabel,
-                                            loginFailedLabel = loginFailedLabel,
-                                            onLaunchFailed = {
-                                                isAuthOperationInProgress = false
-                                            }
-                                        )
+                                        isLoginMethodDialogVisible = true
                                     }
                                 )
                             }
@@ -498,7 +498,7 @@ fun NoteListScreen(
                         isDeleteAccountDialogVisible = false
                         isAuthOperationInProgress = true
                         val deleteTargetUid = user?.uid
-                        startGoogleReauthentication(
+                        startReauthenticationAndDeleteAccount(
                             context = context,
                             deleteTargetUid = deleteTargetUid,
                             googleClientIdMissingLabel = googleClientIdMissingLabel,
@@ -519,6 +519,79 @@ fun NoteListScreen(
             dismissButton = {
                 TextButton(onClick = { isDeleteAccountDialogVisible = false }) {
                     Text(text = cancelLabel)
+                }
+            }
+        )
+    }
+
+    if (isLoginMethodDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { isLoginMethodDialogVisible = false },
+            title = { Text(text = loginLabel) },
+            text = { Text(text = stringResource(id = R.string.login_method_dialog_message)) },
+            confirmButton = {
+                TextButton(
+                    enabled = !isAuthOperationInProgress,
+                    onClick = {
+                        isLoginMethodDialogVisible = false
+                        isAuthOperationInProgress = true
+                        startGoogleLogin(
+                            context = context,
+                            googleSignInLauncher = googleSignInLauncher::launch,
+                            googleClientIdMissingLabel = googleClientIdMissingLabel,
+                            loginFailedLabel = loginFailedLabel,
+                            onLaunchFailed = {
+                                isAuthOperationInProgress = false
+                            }
+                        )
+                    }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.Unspecified
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = loginWithGoogleLabel)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !isAuthOperationInProgress,
+                    onClick = {
+                        isLoginMethodDialogVisible = false
+                        isAuthOperationInProgress = true
+                        startGithubLogin(
+                            context = context,
+                            loginSuccessLabel = loginSuccessLabel,
+                            accountCreatedLabel = accountCreatedLabel,
+                            loginFailedLabel = loginFailedLabel,
+                            firebaseNotConfiguredLabel = firebaseNotConfiguredLabel,
+                            githubSignInInProgressLabel = githubSignInInProgressLabel,
+                            onLoginSuccess = {
+                                isAuthOperationInProgress = false
+                                noteViewModel.refreshNotes()
+                            },
+                            onLoginFailure = { message ->
+                                isAuthOperationInProgress = false
+                                authErrorMessage = message
+                            }
+                        )
+                    }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_github),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.Unspecified
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = loginWithGithubLabel)
+                    }
                 }
             }
         )
@@ -561,7 +634,56 @@ private fun startGoogleLogin(
     googleSignInLauncher(googleSignInClient.signInIntent)
 }
 
-private fun startGoogleReauthentication(
+private fun startGithubLogin(
+    context: Context,
+    loginSuccessLabel: String,
+    accountCreatedLabel: String,
+    loginFailedLabel: String,
+    firebaseNotConfiguredLabel: String,
+    githubSignInInProgressLabel: String,
+    onLoginSuccess: () -> Unit,
+    onLoginFailure: (String) -> Unit
+) {
+    val activity = context as? Activity ?: run {
+        Toast.makeText(context, loginFailedLabel, Toast.LENGTH_LONG).show()
+        onLoginFailure(loginFailedLabel)
+        return
+    }
+    Firebase.initialize(context)
+    val auth = runCatching { FirebaseAuth.getInstance() }
+        .getOrElse { error ->
+            val message = authFailureMessage(firebaseNotConfiguredLabel, error)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            onLoginFailure(message)
+            return
+        }
+    val provider = OAuthProvider.newBuilder(GITHUB_PROVIDER_ID)
+    val signInTask = auth.pendingAuthResult
+        ?: auth.startActivityForSignInWithProvider(activity, provider.build())
+
+    if (auth.pendingAuthResult != null) {
+        Toast.makeText(context, githubSignInInProgressLabel, Toast.LENGTH_SHORT).show()
+    }
+
+    signInTask
+        .addOnSuccessListener { authResult ->
+            val message = if (authResult.additionalUserInfo?.isNewUser == true) {
+                accountCreatedLabel
+            } else {
+                loginSuccessLabel
+            }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            onLoginSuccess()
+        }
+        .addOnFailureListener { error ->
+            Log.w(TAG, "GitHub Firebase sign-in failed", error)
+            val message = authFailureMessage(loginFailedLabel, error)
+            Toast.makeText(context, "$loginFailedLabel: $message", Toast.LENGTH_LONG).show()
+            onLoginFailure("$loginFailedLabel: $message")
+        }
+}
+
+private fun startReauthenticationAndDeleteAccount(
     context: Context,
     deleteTargetUid: String?,
     googleClientIdMissingLabel: String,
@@ -582,6 +704,25 @@ private fun startGoogleReauthentication(
         onDeleteFinished()
         return
     }
+    val currentUser = FirebaseAuth.getInstance().currentUser ?: run {
+        Toast.makeText(context, deleteAccountFailedLabel, Toast.LENGTH_LONG).show()
+        onDeleteFinished()
+        return
+    }
+    if (currentUser.hasGithubProvider()) {
+        startGithubReauthentication(
+            activity = activity,
+            context = context,
+            deleteTargetUid = deleteTargetUid,
+            deleteAccountFailedLabel = deleteAccountFailedLabel,
+            deleteAccountSuccessLabel = deleteAccountSuccessLabel,
+            deleteAccountMismatchLabel = deleteAccountMismatchLabel,
+            onDeleteSuccess = onDeleteSuccess,
+            onDeleteFinished = onDeleteFinished
+        )
+        return
+    }
+
     val webClientId = resolveWebClientId(context)
     if (webClientId.isBlank() || webClientId == "YOUR_FIREBASE_WEB_CLIENT_ID") {
         Toast.makeText(context, googleClientIdMissingLabel, Toast.LENGTH_LONG).show()
@@ -614,7 +755,50 @@ private fun startGoogleReauthentication(
         }
 }
 
-private fun logoutFromFirebaseAndGoogle(
+private fun startGithubReauthentication(
+    activity: Activity,
+    context: Context,
+    deleteTargetUid: String,
+    deleteAccountFailedLabel: String,
+    deleteAccountSuccessLabel: String,
+    deleteAccountMismatchLabel: String,
+    onDeleteSuccess: () -> Unit,
+    onDeleteFinished: () -> Unit
+) {
+    val currentUser = FirebaseAuth.getInstance().currentUser ?: run {
+        Toast.makeText(context, deleteAccountFailedLabel, Toast.LENGTH_LONG).show()
+        onDeleteFinished()
+        return
+    }
+    val provider = OAuthProvider.newBuilder(GITHUB_PROVIDER_ID).build()
+    currentUser.startActivityForReauthenticateWithProvider(activity, provider)
+        .addOnSuccessListener {
+            val refreshedUser = FirebaseAuth.getInstance().currentUser
+            if (refreshedUser == null || refreshedUser.uid != deleteTargetUid) {
+                Toast.makeText(context, deleteAccountMismatchLabel, Toast.LENGTH_LONG).show()
+                onDeleteFinished()
+                return@addOnSuccessListener
+            }
+            refreshedUser.delete()
+                .addOnSuccessListener {
+                    Toast.makeText(context, deleteAccountSuccessLabel, Toast.LENGTH_SHORT).show()
+                    onDeleteSuccess()
+                    onDeleteFinished()
+                }
+                .addOnFailureListener { error ->
+                    val message = error.localizedMessage ?: deleteAccountFailedLabel
+                    Toast.makeText(context, "$deleteAccountFailedLabel: $message", Toast.LENGTH_LONG).show()
+                    onDeleteFinished()
+                }
+        }
+        .addOnFailureListener { error ->
+            val message = error.localizedMessage ?: deleteAccountFailedLabel
+            Toast.makeText(context, "$deleteAccountFailedLabel: $message", Toast.LENGTH_LONG).show()
+            onDeleteFinished()
+        }
+}
+
+private fun logoutFromFirebaseAndProviders(
     context: Context,
     logoutSuccessLabel: String,
     logoutFailedLabel: String,
@@ -624,6 +808,11 @@ private fun logoutFromFirebaseAndGoogle(
     FirebaseAuth.getInstance().signOut()
 
     val webClientId = resolveWebClientId(context)
+    if (webClientId.isBlank() || webClientId == "YOUR_FIREBASE_WEB_CLIENT_ID") {
+        Toast.makeText(context, logoutSuccessLabel, Toast.LENGTH_SHORT).show()
+        onLogoutSuccess()
+        return
+    }
     val googleSignInClient = GoogleSignIn.getClient(context, createGoogleSignInOptions(webClientId))
     googleSignInClient.signOut()
         .addOnSuccessListener {
@@ -634,6 +823,10 @@ private fun logoutFromFirebaseAndGoogle(
             Toast.makeText(context, logoutFailedLabel, Toast.LENGTH_LONG).show()
             onLogoutFailure()
         }
+}
+
+private fun FirebaseUser.hasGithubProvider(): Boolean {
+    return providerData.any { userInfo -> userInfo.providerId == GITHUB_PROVIDER_ID }
 }
 
 private fun reauthenticateAndDeleteFirebaseAccount(

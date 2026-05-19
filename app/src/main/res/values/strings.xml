@@ -18,6 +18,9 @@
     <string name="menu">Menu</string>
     <string name="change_wallpaper">Change wallpaper</string>
     <string name="login">Login</string>
+    <string name="login_method_dialog_message">Choose a login method.</string>
+    <string name="login_with_google">Login with Google</string>
+    <string name="login_with_github">Login with GitHub</string>
     <string name="license">License information</string>
     <string name="login_success">Logged in to Firebase</string>
     <string name="login_new_account_created">Logged in and created a new Firebase account</string>
@@ -26,6 +29,7 @@
     <string name="login_canceled">Login canceled</string>
     <string name="google_sign_in_developer_error">Google Sign-In is not configured for this app. Check Firebase SHA certificate fingerprints and the web client ID.</string>
     <string name="google_sign_in_in_progress">Google Sign-In is already in progress.</string>
+    <string name="github_sign_in_in_progress">GitHub Sign-In is already in progress.</string>
     <string name="firebase_not_configured">Firebase is not configured. Please check project settings.</string>
     <string name="google_client_id_missing">Google client ID is not configured. Set firebase_web_client_id.</string>
     <string name="firebase_web_client_id">YOUR_FIREBASE_WEB_CLIENT_ID</string>
@@ -36,6 +40,6 @@
     <string name="delete_account">Delete account</string>
     <string name="delete_account_success">Account deleted</string>
     <string name="delete_account_failed">Account deletion failed</string>
-    <string name="delete_account_reauth_required">Could not confirm the current Google account. Please log in again with the same account and retry.</string>
-    <string name="delete_account_account_mismatch">The current Google account does not match the Firebase account to delete.</string>
+    <string name="delete_account_reauth_required">Could not confirm the current account. Please log in again with the same account and retry.</string>
+    <string name="delete_account_account_mismatch">The current account does not match the Firebase account to delete.</string>
 </resources>
